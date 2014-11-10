@@ -60,24 +60,24 @@ module ActsAsApi
         api_attributes = self.class.api_accessible_attributes(api_template)
         raise ActsAsApi::TemplateNotFoundError.new("acts_as_api template :#{api_template.to_s} was not found for model #{self.class}") if api_attributes.nil?
 
-        before_api_response(api_template)
-        response_hash = around_api_response(api_template) do
+        before_api_response(api_template, options)
+        response_hash = around_api_response(api_template, options) do
           api_attributes.to_response_hash(self, api_attributes, options)
         end
-        after_api_response(api_template)
+        after_api_response(api_template, options)
 
         response_hash
       end
 
     protected
 
-      def before_api_response(api_remplate)
+      def before_api_response(api_remplate, options = {})
       end
 
-      def after_api_response(api_remplate)
+      def after_api_response(api_remplate, options = {})
       end
 
-      def around_api_response(api_remplate)
+      def around_api_response(api_remplate, options = {})
         yield
       end
 
