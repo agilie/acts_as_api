@@ -60,11 +60,30 @@ module ActsAsApi
         api_attributes = self.class.api_accessible_attributes(api_template)
         raise ActsAsApi::TemplateNotFoundError.new("acts_as_api template :#{api_template.to_s} was not found for model #{self.class}") if api_attributes.nil?
 
-        before_api_response(api_template, options)
-        response_hash = around_api_response(api_template, options) do
-          api_attributes.to_response_hash(self, api_attributes, options)
+        if self.methods(:before_api_response).arity == 1
+          Rails.logger.warning "[ActsAsApi] callback before_api_response with one argument is DEPRECATED"
+          before_api_response(api_template)
+        else
+          before_api_response(api_template, options)
         end
-        after_api_response(api_template, options)
+
+        response_hash = if self.methods(:around_api_response).arity == 1
+                          Rails.logger.warning "[ActsAsApi] callback around_api_response with one argument is DEPRECATED"
+                          around_api_response(api_template) do
+                            api_attributes.to_response_hash(self, api_attributes)
+                          end
+                        else
+                          around_api_response(api_template, options) do
+                            api_attributes.to_response_hash(self, api_attributes, options)
+                          end
+                        end
+
+        if self.methods(:after_api_response).arity == 1
+          Rails.logger.warning "[ActsAsApi] callback after_api_response with one argument is DEPRECATED"
+          after_api_response(api_template)
+        else
+          after_api_response(api_template, options)
+        end
 
         response_hash
       end
